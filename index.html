@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Documentación Generador de Prompts</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        h1, h2, h3 {
+            color: #2c3e50;
+        }
+        .code-block {
+            background-color: #f8f9fa;
+            border-left: 4px solid #4285f4;
+            padding: 15px;
+            margin: 20px 0;
+            overflow-x: auto;
+        }
+        .note {
+            background-color: #e3f2fd;
+            padding: 15px;
+            border-left: 4px solid #2196f3;
+            margin: 20px 0;
+        }
+        .api-section {
+            background-color: #f5f5f5;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .flow-section {
+            background-color: #e8f5e9;
+            padding: 20px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1><i class="fas fa-robot"></i> Documentación del Generador de Prompts Académicos</h1>
+    
+    <div class="note">
+        <p><strong>Nota:</strong> Este documento cubre la funcionalidad principal del sistema generador de prompts, enfocándose en la lógica JavaScript y las interacciones con la API de Gemini.</p>
+    </div>
+    
+    <h2><i class="fas fa-cogs"></i> Configuración Inicial</h2>
+    
+    <div class="api-section">
+        <h3><i class="fas fa-key"></i> Configuración de la API</h3>
+        <p>El sistema utiliza la API de Google Generative AI con la siguiente configuración:</p>
+        
+        <div class="code-block">
+            <pre><code>// Importación del módulo de Google Generative AI
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+// Configuración de la API Key y creación del cliente
+const API_KEY = 'AIzaSyA8KQ2EzWtW8sXq9Ew-TXH9RJqXw9GLpJQ';
+const genAI = new GoogleGenerativeAI(API_KEY);</code></pre>
+        </div>
+        
+        <p><strong>Modelo utilizado:</strong> gemini-1.5-flash con configuración de generación:</p>
+        <ul>
+            <li><strong>maxOutputTokens:</strong> 500 (para generación inicial)</li>
+            <li><strong>temperature:</strong> 0.9 (para creatividad balanceada)</li>
+        </ul>
+    </div>
+    
+    <h2><i class="fas fa-project-diagram"></i> Flujo Principal</h2>
+    
+    <div class="flow-section">
+        <h3><i class="fas fa-sitemap"></i> Diagrama de Flujo</h3>
+        <ol>
+            <li>Selección de área de conocimiento (SWEBOK o ITBOK)</li>
+            <li>Selección de materia específica</li>
+            <li>Selección de nivel académico</li>
+            <li>Ingreso del objetivo del prompt</li>
+            <li>Generación del prompt</li>
+            <li>Opciones post-generación (copiar, traducir, mejorar)</li>
+        </ol>
+    </div>
+    
+    <h2><i class="fas fa-code"></i> Funcionalidades Clave</h2>
+    
+    <h3><i class="fas fa-magic"></i> Generación del Prompt</h3>
+    <p>La función principal que genera el prompt académico:</p>
+    
+    <div class="code-block">
+        <pre><code>generateBtn.addEventListener('click', async function() {
+    // Validación de campos requeridos
+    if (!selectedCareer || !selectedSubject || !selectedLevel || !objectiveTextarea.value.trim()) {
+        alert('Por favor, completa todos los campos antes de generar el prompt.');
+        return;
+    }
+    
+    // Configuración del prompt base con parámetros del usuario
+    const promptText = `Eres un experto en creación de prompts avanzados... 
+    (estructura detallada del prompt)`; // Ver código completo para la plantilla exacta
+    
+    try {
+        // Configuración del modelo
+        const model = genAI.getGenerativeModel({
+            model: "gemini-1.5-flash",
+            generationConfig: {
+                maxOutputTokens: 500,
+                temperature: 0.9
+            }
+        });
+        
+        // Llamada a la API
+        const result = await model.generateContent(promptText);
+        let response = result.response.text();
+        
+        // Formateo de la respuesta
+        response = response
+            .replace(/\*\*(.*?)\*\*/g, "&lt;strong&gt;$1&lt;/strong&gt;")
+            .replace(/\n/g, "&lt;br&gt;")
+            .replace(/- (.*?)(&lt;br&gt;|$)/g, "• $1$2");
+        
+        // Mostrar resultado
+        generatedPrompt.innerHTML = response;
+        currentPromptText = response.replace(/&lt;[^&gt;]*&gt;/g, '');
+        
+    } catch (error) {
+        console.error('Error:', error);
+        // Manejo de errores
+    }
+});</code></pre>
+    </div>
+    
+    <h3><i class="fas fa-language"></i> Sistema de Traducción</h3>
+    <p>Funcionalidad para traducir el prompt generado a diferentes idiomas:</p>
+    
+    <div class="code-block">
+        <pre><code>translateOptions.forEach(option => {
+    option.addEventListener('click', async function(e) {
+        e.preventDefault();
+        const lang = this.dataset.lang;
+        const langName = this.textContent;
+        
+        // Configuración del prompt de traducción
+        const prompt = `Traduce el siguiente texto técnico-académico al ${langName} (${lang}), 
+        conservando los términos técnicos...`;
+        
+        try {
+            const model = genAI.getGenerativeModel({
+                model: "gemini-1.5-flash",
+                generationConfig: {
+                    maxOutputTokens: 1000,
+                    temperature: 0.7
+                }
+            });
+            
+            // Llamada a la API para traducción
+            const result = await model.generateContent(prompt);
+            let translatedText = result.response.text();
+            
+            // Formateo y visualización del resultado
+            translatedText = translatedText
+                .replace(/\*\*(.*?)\*\*/g, "&lt;strong&gt;$1&lt;/strong&gt;")
+                .replace(/\n/g, "&lt;br&gt;")
+                .replace(/- (.*?)(&lt;br&gt;|$)/g, "• $1$2");
+            
+            generatedPrompt.innerHTML = translatedText;
+            currentPromptText = translatedText.replace(/&lt;[^&gt;]*&gt;/g, '');
+            
+        } catch (error) {
+            // Manejo de errores
+        }
+    });
+});</code></pre>
+    </div>
+    
+    <h3><i class="fas fa-wand-magic-sparkles"></i> Mejora de Prompts</h3>
+    <p>Sistema para refinar y mejorar prompts generados:</p>
+    
+    <div class="code-block">
+        <pre><code>submitImproveBtn.addEventListener('click', async function() {
+    const feedback = improveFeedback.value.trim();
+    
+    // Configuración del prompt de mejora
+    const prompt = `Tienes este prompt profesional para IA:
+    "${currentPromptText}"
+    
+    El usuario solicita las siguientes mejoras:
+    "${feedback}"
+    
+    Genera una versión mejorada del prompt que:
+    1. Mantenga su estructura profesional original
+    2. Incorpore las mejoras solicitadas...`;
+    
+    try {
+        const model = genAI.getGenerativeModel({
+            model: "gemini-1.5-flash",
+            generationConfig: {
+                maxOutputTokens: 800,
+                temperature: 0.7
+            }
+        });
+        
+        // Llamada a la API para mejora
+        const result = await model.generateContent(prompt);
+        let improvedPrompt = result.response.text();
+        
+        // Formateo y visualización del resultado mejorado
+        improvedPrompt = improvedPrompt
+            .replace(/\*\*(.*?)\*\*/g, "&lt;strong&gt;$1&lt;/strong&gt;")
+            .replace(/\n/g, "&lt;br&gt;");
+        
+        generatedPrompt.innerHTML = improvedPrompt;
+        currentPromptText = improvedPrompt.replace(/&lt;[^&gt;]*&gt;/g, '');
+        
+    } catch (error) {
+        // Manejo de errores
+    }
+});</code></pre>
+    </div>
+    
+    <h2><i class="fas fa-exchange-alt"></i> Interacciones con la API</h2>
+    
+    <div class="api-section">
+        <h3><i class="fas fa-cloud"></i> Peticiones a la API</h3>
+        <p>El sistema realiza tres tipos principales de peticiones a la API de Gemini:</p>
+        
+        <table border="1" style="width:100%; border-collapse: collapse;">
+            <tr>
+                <th>Tipo</th>
+                <th>Configuración</th>
+                <th>Propósito</th>
+            </tr>
+            <tr>
+                <td>Generación inicial</td>
+                <td>maxOutputTokens: 500, temperature: 0.9</td>
+                <td>Crear el prompt base con los parámetros del usuario</td>
+            </tr>
+            <tr>
+                <td>Traducción</td>
+                <td>maxOutputTokens: 1000, temperature: 0.7</td>
+                <td>Traducir el prompt manteniendo términos técnicos</td>
+            </tr>
+            <tr>
+                <td>Mejora</td>
+                <td>maxOutputTokens: 800, temperature: 0.7</td>
+                <td>Refinar el prompt según feedback del usuario</td>
+            </tr>
+        </table>
+    </div>
+    
+    <h2><i class="fas fa-lightbulb"></i> Consideraciones Técnicas</h2>
+    
+    <div class="note">
+        <h3><i class="fas fa-exclamation-triangle"></i> Manejo de Errores</h3>
+        <p>El sistema incluye manejo básico de errores para:</p>
+        <ul>
+            <li>Campos requeridos no completados</li>
+            <li>Fallos en la conexión con la API</li>
+            <li>Problemas con el portapapeles al copiar</li>
+        </ul>
+    </div>
+    
+    <div class="note">
+        <h3><i class="fas fa-tachometer-alt"></i> Optimizaciones</h3>
+        <p>Características de rendimiento incluidas:</p>
+        <ul>
+            <li>Formateo de respuestas para mejor legibilidad</li>
+            <li>Manejo de estado para evitar peticiones redundantes</li>
+            <li>Desplazamiento automático a resultados</li>
+        </ul>
+    </div>
+</body>
+</html>
